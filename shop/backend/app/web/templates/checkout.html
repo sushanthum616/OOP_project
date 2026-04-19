@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+
+  <nav class="breadcrumb">
+    <a href="/cart">Cart</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>Checkout</span>
+  </nav>
+
+  <h1 class="page-title">Checkout</h1>
+  <p class="page-subtitle">Review your order and enter your shipping information.</p>
+
+  {% if error %}
+  <div class="flash-error"><span>⚠️</span><span>{{ error }}</span></div>
+  {% endif %}
+
+  <div class="checkout-layout">
+
+    <!-- Left: Shipping form -->
+    <div>
+
+      <!-- Saved addresses -->
+      {% if addresses %}
+      <div class="card" style="margin-bottom:var(--sp-5);">
+        <div class="card-header">📍 Saved Addresses — Click "Use" to prefill</div>
+        <div class="card-body" style="padding:var(--sp-4);">
+          <div class="address-grid" style="grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));">
+            {% for a in addresses %}
+            <div class="address-card {% if a.is_default %}default{% endif %}">
+              <div class="address-label">
+                {{ a.label or "Address" }}
+                {% if a.is_default %}
+                <span class="badge badge-active" style="font-size:.65rem;">Default</span>
+                {% endif %}
+              </div>
+              <div class="address-body">
+                <strong>{{ a.recipient_name }}</strong><br />
+                {{ a.display }}
+              </div>
+              <a href="/checkout?address_id={{ a.id }}" id="use-addr-{{ a.id }}">
+                <button type="button" class="btn btn-primary btn-sm">Use this address</button>
+              </a>
+            </div>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Address form -->
+      <div class="form-card">
+        <h2 style="margin-bottom:var(--sp-5); font-size:1.2rem;">📦 Shipping Information</h2>
+
+        <form id="checkout-form" method="post" action="/checkout">
+
+          <div class="form-group">
+            <label class="form-label" for="shipping_name">Recipient Name *</label>
+            <input id="shipping_name" name="shipping_name" type="text" required value="{{ shipping_name or '' }}"
+              placeholder="Full name" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="line1">Address Line 1 *</label>
+            <input id="line1" name="line1" type="text" required value="{{ line1 or '' }}"
+              placeholder="Street address, P.O. box" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="line2">Address Line 2</label>
+            <input id="line2" name="line2" type="text" value="{{ line2 or '' }}"
+              placeholder="Apartment, suite, unit, building (optional)" />
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="city">City *</label>
+              <input id="city" name="city" type="text" required value="{{ city or '' }}" placeholder="City" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="state">State / Province</label>
+              <input id="state" name="state" type="text" value="{{ state or '' }}" placeholder="State" />
+            </div>
+          </div>
+
+          <div class="form-row-2">
+            <div class="form-group">
+              <label class="form-label" for="postal_code">Postal Code</label>
+              <input id="postal_code" name="postal_code" type="text" value="{{ postal_code or '' }}"
+                placeholder="ZIP / Postal code" />
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="country">Country</label>
+              <input id="country" name="country" type="text" value="{{ country or '' }}" placeholder="Country" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone</label>
+            <input id="phone" name="phone" type="text" value="{{ phone or '' }}"
+              placeholder="Phone number (optional)" />
+          </div>
+
+          <hr class="divider" />
+
+          <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+            <input id="save_address" name="save_address" type="checkbox" {% if save_address %}checked{% endif %} />
+            <label for="save_address" style="cursor:pointer; font-size:.9rem;">
+              💾 Save this address to my address book
+            </label>
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="label">Address Label</label>
+            <input id="label" name="label" type="text" value="{{ label or '' }}" placeholder="e.g. Home, Office" />
+          </div>
+
+          <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+            <input id="make_default" name="make_default" type="checkbox" {% if make_default %}checked{% endif %} />
+            <label for="make_default" style="cursor:pointer; font-size:.9rem;">
+              ⭐ Make this my default address
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button id="place-order-btn" type="submit" class="btn btn-accent btn-lg">
+              ✅ Place Order
+            </button>
+            <a href="/cart" class="btn btn-secondary">← Back to Cart</a>
+          </div>
+
+        </form>
+      </div>
+    </div><!-- /left -->
+
+    <!-- Right: Order summary -->
+    <div class="order-summary">
+      <div class="card-header">📋 Order Summary</div>
+      <div class="order-summary-body">
+        {% for line in lines %}
+        <div class="summary-line">
+          <span>{{ line.name }}<br /><small class="muted">× {{ line.qty }}</small></span>
+          <span style="font-weight:600;">{{ line.line_total_display }}</span>
+        </div>
+        {% endfor %}
+        <div class="summary-line summary-total" style="margin-top:8px; font-size:1.1rem;">
+          <span>Total</span>
+          <span>{{ total_display }}</span>
+        </div>
+      </div>
+      <div class="card-footer">
+        <p class="muted" style="font-size:.8rem; text-align:center;">
+          🔒 Secure checkout · Free returns
+        </p>
+      </div>
+    </div>
+
+  </div><!-- /checkout-layout -->
+
+</div>
+{% endblock %}

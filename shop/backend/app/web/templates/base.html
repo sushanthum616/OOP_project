@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{% block title %}{{ title or "MiniShop" }}{% endblock %} — MiniShop</title>
+  <meta name="description" content="{% block description %}MiniShop — Premium online shopping experience.{% endblock %}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Sora:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛍️</text></svg>" />
+</head>
+<body>
+
+  <!-- ── Navbar ── -->
+  <nav class="navbar" role="navigation" aria-label="Main navigation">
+    <a href="/" class="navbar-brand" aria-label="MiniShop home">
+      <div class="brand-icon">🛍</div>
+      <span class="brand-name">MiniShop</span>
+    </a>
+
+    <form class="navbar-search" method="get" action="/" role="search" aria-label="Search products">
+      <input
+        id="nav-search-input"
+        name="q"
+        type="search"
+        placeholder="Search products…"
+        value="{{ q or '' }}"
+        autocomplete="off"
+        aria-label="Search"
+      />
+      <button id="nav-search-btn" type="submit" aria-label="Search">Search</button>
+    </form>
+
+    <div class="nav-spacer"></div>
+
+    <div class="navbar-links">
+
+      {% if user %}
+        <a href="/orders" class="nav-link" id="nav-orders">
+          <span>📦</span><span>Orders</span>
+        </a>
+        <a href="/addresses" class="nav-link" id="nav-addresses">
+          <span>📍</span><span>Addresses</span>
+        </a>
+        <a href="/cart" class="nav-link cart-link" id="nav-cart" aria-label="Cart">
+          <span>🛒</span><span>Cart</span>
+          {% if cart_count and cart_count > 0 %}
+          <span class="cart-badge" aria-label="{{ cart_count }} items in cart">{{ cart_count }}</span>
+          {% endif %}
+        </a>
+
+        {% if user.is_admin %}
+        <span class="nav-admin-badge">Admin</span>
+        <a href="/admin/products" class="nav-link" id="nav-admin-products"><span>⚙️</span><span>Products</span></a>
+        <a href="/admin/orders" class="nav-link" id="nav-admin-orders"><span>📋</span><span>Orders</span></a>
+        {% endif %}
+
+        <div class="nav-user">
+          <span class="nav-user-name">{{ user.full_name.split()[0] }}</span>
+          <form method="post" action="/logout" style="display:inline;">
+            <button id="nav-logout-btn" type="submit" class="btn-nav-logout">Sign out</button>
+          </form>
+        </div>
+      {% else %}
+        <a href="/login" class="btn-nav-login" id="nav-login">Sign in</a>
+        <a href="/register" class="btn-nav-register" id="nav-register">Get started</a>
+      {% endif %}
+    </div>
+  </nav>
+
+  <!-- ── Flash messages ── -->
+  {% set _flash = flash_error %}
+  {% if _flash %}
+  <div class="flash-banner flash-banner-error" role="alert" aria-live="polite">
+    <div class="flash-banner-inner">
+      <span class="flash-icon">⚠️</span>
+      <span>{{ _flash }}</span>
+      <button class="flash-close" onclick="this.parentElement.parentElement.remove()" aria-label="Dismiss">✕</button>
+    </div>
+  </div>
+  {% endif %}
+
+  <!-- ── Page content ── -->
+  <main class="page-content" id="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- ── Footer ── -->
+  <footer class="site-footer">
+    <div class="site-footer-inner">
+      <div class="footer-brand">
+        <div class="brand-icon" style="width:28px;height:28px;font-size:14px;">🛍</div>
+        <span style="font-weight:700;color:#fff;font-size:.95rem;">MiniShop</span>
+      </div>
+      <p style="margin-top:8px;">© 2025 MiniShop. All rights reserved. · <a href="/login">Sign in</a> · <a href="/register">Register</a></p>
+    </div>
+  </footer>
+
+</body>
+</html>

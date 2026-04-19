@@ -1,0 +1,18 @@
+MiniShop Receipt
+========================================
+Order: 7d5142ac-f592-4551-844a-51a17707391e
+User: samirkhadka@gmail.com
+Payment: PAID (MOCK ref: 40893611-deb)
+Created: 2026-03-03T05:50:11.660846+00:00
+----------------------------------------
+Python OOP Book (BK-1001)
+  USD 29.99 x 1 = USD 29.99
+----------------------------------------
+TOTAL: USD 29.99
+
+Shipping To:
+samir khadka
+122 Hackamore Lane
+Fremont, California 94539
+United States
+Phone: 3413562841

@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-sm">
+
+  <nav class="breadcrumb">
+    <a href="/admin/orders">Orders</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>#{{ order.id_short }}</span>
+  </nav>
+
+  <div class="admin-header">
+    <div>
+      <div class="admin-title">Order #{{ order.id_short }}</div>
+      <div class="admin-subtitle">{{ order.created_at_display }} · Customer: {{ order.user_email }}</div>
+    </div>
+    {% set s = order.status|lower %}
+    <span class="badge badge-{{ s }}" style="font-size:.85rem; padding:8px 16px;">{{ order.status }}</span>
+  </div>
+
+  {% if error %}
+    <div class="flash-error" role="alert"><span>⚠️</span><span>{{ error }}</span></div>
+  {% endif %}
+
+  <!-- Status -->
+  <div class="info-card" style="margin-bottom:var(--sp-4);">
+    <h3>🔄 Update Status</h3>
+    <p class="muted" style="margin-bottom:var(--sp-3);">Current: <strong style="color:var(--slate-800);">{{ order.status }}</strong></p>
+    <form method="post" action="/admin/orders/{{ order.id }}/status" style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+      <select name="new_status" style="width:auto;">
+        {% for s in status_options %}
+          <option value="{{ s }}" {% if s == order.status %}selected{% endif %}>{{ s }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" class="btn btn-primary btn-sm">Update Status</button>
+    </form>
+
+    {% if order.status == "PLACED" or order.status == "PROCESSING" %}
+      <form method="post" action="/admin/orders/{{ order.id }}/cancel" style="margin-top:var(--sp-3);">
+        <button type="submit" class="btn btn-danger btn-sm">🚫 Cancel + Restock</button>
+      </form>
+    {% endif %}
+  </div>
+
+  <!-- Shipping -->
+  <div class="info-card" style="margin-bottom:var(--sp-4);">
+    <h3>📍 Shipping</h3>
+    <strong style="display:block; margin-bottom:6px;">{{ order.shipping_name }}</strong>
+    <pre>{{ order.shipping_address }}</pre>
+  </div>
+
+  <!-- Items -->
+  <div class="card">
+    <div class="card-header">📦 Items</div>
+    <div class="card-body" style="padding:0;">
+      {% for line in order.lines %}
+        <div style="display:flex; justify-content:space-between; align-items:center; padding:14px var(--sp-6); border-bottom:1px solid var(--slate-100);">
+          <div>
+            <div style="font-weight:600; font-size:.95rem;">{{ line.name }}</div>
+            <div class="muted">{{ line.unit_price.display }} × {{ line.qty }}</div>
+          </div>
+          <div style="font-weight:700; font-size:1rem;">{{ line.line_total.display }}</div>
+        </div>
+      {% endfor %}
+      <div style="display:flex; justify-content:space-between; padding:16px var(--sp-6); background:var(--slate-50);">
+        <strong>Total</strong>
+        <strong style="font-size:1.1rem; color:var(--indigo-600);">{{ order.total.display }}</strong>
+      </div>
+    </div>
+  </div>
+
+  <div style="margin-top:var(--sp-5);">
+    <a href="/admin/orders" class="btn btn-ghost">← Back to Orders</a>
+  </div>
+
+</div>
+{% endblock %}

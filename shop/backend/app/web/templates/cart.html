@@ -1,0 +1,112 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+
+  <h1 class="page-title">Your Cart</h1>
+  <p class="page-subtitle">
+    {% if lines %}{{ lines|length }} item{% if lines|length != 1 %}s{% endif %} in your cart{% else %}Your cart is
+    empty{% endif %}
+  </p>
+
+  {% if not lines %}
+
+  <div class="empty-state">
+    <div class="empty-icon">🛒</div>
+    <h3>Nothing here yet</h3>
+    <p>Looks like your cart is empty.<br>Start shopping to add items.</p>
+    <a href="/" class="btn btn-primary" style="margin-top:24px;">Browse Products</a>
+  </div>
+
+  {% else %}
+
+  <div class="cart-layout">
+
+    <!-- Cart items -->
+    <div class="card">
+      <div class="card-header">🛒 Cart Items</div>
+      {% for line in lines %}
+      <div class="cart-item">
+        <!-- Emoji image -->
+        <div class="cart-item-img">
+          {% if line.image_url %}
+            <img src="{{ line.image_url }}" alt="{{ line.name }}" class="cart-item-img-photo" />
+          {% elif "book" in line.name|lower %}📚
+          {% elif "mouse" in line.name|lower %}🖱️
+          {% elif "phone" in line.name|lower %}📱
+          {% elif "laptop" in line.name|lower %}💻
+          {% elif "headphone" in line.name|lower %}🎧
+          {% else %}🛍️
+          {% endif %}
+        </div>
+
+        <!-- Item info -->
+        <div class="cart-item-info">
+          <div class="cart-item-name">{{ line.name }}</div>
+          <div class="cart-item-meta">
+            {{ line.unit_price_display }} each ·
+            {% if line.available > 0 %}
+            <span style="color:var(--success-600);">{{ line.available }} available</span>
+            {% else %}
+            <span style="color:var(--danger-600);">Out of stock</span>
+            {% endif %}
+          </div>
+        </div>
+
+        <!-- Quantity update -->
+        <div class="cart-item-actions">
+          <form id="update-cart-{{ line.product_id }}" class="cart-qty-form" method="post"
+            action="/cart/set/{{ line.product_id }}">
+            <input type="hidden" name="next" value="/cart" />
+            <input id="qty-{{ line.product_id }}" name="qty" type="number" min="0" max="{{ line.available }}"
+              value="{{ line.qty }}" />
+            <button id="update-btn-{{ line.product_id }}" type="submit" class="btn btn-secondary btn-sm">Update</button>
+          </form>
+
+          <div class="cart-item-total">{{ line.line_total_display }}</div>
+
+          <form id="remove-{{ line.product_id }}" class="inline" method="post"
+            action="/cart/remove/{{ line.product_id }}">
+            <button id="remove-btn-{{ line.product_id }}" type="submit" class="btn btn-ghost btn-sm"
+              style="color:var(--danger-600);">✕ Remove</button>
+          </form>
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+
+    <!-- Order summary -->
+    <div class="order-summary">
+      <div class="card-header">📋 Order Summary</div>
+      <div class="order-summary-body">
+        {% for line in lines %}
+        <div class="summary-line">
+          <span>{{ line.name }} × {{ line.qty }}</span>
+          <span>{{ line.line_total_display }}</span>
+        </div>
+        {% endfor %}
+        <div class="summary-line summary-total" style="margin-top:8px;">
+          <span>Total</span>
+          <span>{{ total_display }}</span>
+        </div>
+      </div>
+      <div class="card-footer" style="display:flex; flex-direction:column; gap:10px;">
+        <form id="checkout-btn-form" method="get" action="/checkout">
+          <button id="checkout-btn" type="submit" class="btn btn-accent btn-full">
+            🏁 Proceed to Checkout
+          </button>
+        </form>
+        <form id="clear-cart-form" method="post" action="/cart/clear">
+          <button id="clear-cart-btn" type="submit" class="btn btn-secondary btn-full">🗑️ Clear Cart</button>
+        </form>
+        <a href="/" class="btn btn-ghost btn-full" style="justify-content:center;">
+          ← Continue Shopping
+        </a>
+      </div>
+    </div>
+
+  </div><!-- /cart-layout -->
+
+  {% endif %}
+
+</div>
+{% endblock %}

@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-sm">
+
+  <nav class="breadcrumb">
+    <a href="/addresses">Addresses</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>{{ title }}</span>
+  </nav>
+
+  <h1 class="page-title">{{ title }}</h1>
+
+  {% if error %}
+    <div class="flash-error" role="alert"><span>⚠️</span><span>{{ error }}</span></div>
+  {% endif %}
+
+  <div class="form-card">
+    <form id="address-form" method="post" action="{{ action }}">
+
+      <div class="form-group">
+        <label class="form-label" for="label">Label (e.g. Home, Office)</label>
+        <input id="label" name="label" type="text" value="{{ a.label }}" placeholder="Home" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="recipient_name">Recipient name *</label>
+        <input id="recipient_name" name="recipient_name" type="text" required value="{{ a.recipient_name }}" placeholder="Full name" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="line1">Address line 1 *</label>
+        <input id="line1" name="line1" type="text" required value="{{ a.line1 }}" placeholder="Street address, P.O. box" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="line2">Address line 2</label>
+        <input id="line2" name="line2" type="text" value="{{ a.line2 }}" placeholder="Apartment, suite, unit (optional)" />
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="city">City *</label>
+          <input id="city" name="city" type="text" required value="{{ a.city }}" placeholder="City" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="state">State / Province</label>
+          <input id="state" name="state" type="text" value="{{ a.state }}" placeholder="State" />
+        </div>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="postal_code">Postal code</label>
+          <input id="postal_code" name="postal_code" type="text" value="{{ a.postal_code }}" placeholder="ZIP / Postal code" />
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="country">Country</label>
+          <input id="country" name="country" type="text" value="{{ a.country }}" placeholder="Country" />
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="phone">Phone</label>
+        <input id="phone" name="phone" type="text" value="{{ a.phone }}" placeholder="Phone number (optional)" />
+      </div>
+
+      <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+        <input id="make_default" name="make_default" type="checkbox" {% if make_default %}checked{% endif %} />
+        <label for="make_default" style="cursor:pointer; font-size:.9rem; font-weight:500;">
+          ⭐ Make this my default address
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button id="save-address-btn" type="submit" class="btn btn-accent btn-lg">💾 Save Address</button>
+        <a href="/addresses" class="btn btn-secondary">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+{% endblock %}

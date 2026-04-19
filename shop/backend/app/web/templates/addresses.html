@@ -1,0 +1,65 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container">
+
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Your Addresses</h1>
+      <p class="page-subtitle">Manage your saved delivery addresses.</p>
+    </div>
+    <a href="/addresses/new">
+      <button type="button" class="btn btn-primary">+ Add Address</button>
+    </a>
+  </div>
+
+  {% if not addresses %}
+    <div class="empty-state">
+      <div class="empty-icon">📍</div>
+      <h3>No saved addresses yet</h3>
+      <p>Add an address to speed up checkout.</p>
+      <a href="/addresses/new" class="btn btn-primary" style="margin-top:20px;">+ Add Address</a>
+    </div>
+  {% else %}
+    <div class="address-grid">
+      {% for a in addresses %}
+        <div class="address-card {% if a.is_default %}default{% endif %}">
+
+          <div class="address-label">
+            {{ a.label or "Address" }}
+            {% if a.is_default %}
+              <span class="badge badge-active" style="font-size:.65rem;">Default</span>
+            {% endif %}
+          </div>
+
+          <div class="address-body">
+            <strong>{{ a.recipient_name }}</strong><br />
+            {{ a.display }}
+          </div>
+
+          <div class="address-actions">
+            <a href="/checkout?address_id={{ a.id }}">
+              <button type="button" class="btn btn-primary btn-sm">Use for Checkout</button>
+            </a>
+
+            {% if not a.is_default %}
+              <form class="inline" method="post" action="/addresses/{{ a.id }}/default">
+                <button type="submit" class="btn btn-secondary btn-sm">Make Default</button>
+              </form>
+            {% endif %}
+
+            <a href="/addresses/{{ a.id }}/edit">
+              <button type="button" class="btn btn-ghost btn-sm">Edit</button>
+            </a>
+
+            <form class="inline" method="post" action="/addresses/{{ a.id }}/delete">
+              <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+            </form>
+          </div>
+
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+</div>
+{% endblock %}

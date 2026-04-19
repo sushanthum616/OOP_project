@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Create Account{% endblock %}
+{% block description %}Create your MiniShop account and start shopping.{% endblock %}
+
+{% block content %}
+<div class="container-auth">
+  <div class="auth-card">
+
+    <div class="auth-logo">
+      <div class="brand-icon">🛍</div>
+      <div class="auth-title">Create account</div>
+      <div class="auth-subtitle">Join MiniShop and start shopping</div>
+    </div>
+
+    {% if error %}
+    <div class="flash-error" role="alert" style="margin-bottom:var(--sp-5);">
+      <span>⚠️</span><span>{{ error }}</span>
+    </div>
+    {% endif %}
+
+    <form id="register-form" method="post" action="/register" novalidate>
+
+      <div class="form-group">
+        <label class="form-label" for="full_name">Full name</label>
+        <input
+          id="full_name"
+          name="full_name"
+          type="text"
+          required
+          placeholder="Your full name"
+          autocomplete="name"
+          autofocus
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="email">Email address</label>
+        <input
+          id="email"
+          name="email"
+          type="email"
+          required
+          placeholder="you@example.com"
+          autocomplete="email"
+        />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="password">Password</label>
+        <div class="password-field">
+          <input
+            id="password"
+            name="password"
+            type="password"
+            required
+            placeholder="Choose a password"
+            autocomplete="new-password"
+          />
+          <button type="button" class="password-toggle" id="toggle-password" onclick="togglePwd()" aria-label="Toggle password visibility">👁</button>
+        </div>
+      </div>
+
+      <button id="register-submit" type="submit" class="btn btn-primary btn-full btn-lg" style="margin-top:var(--sp-4);">
+        Create Account →
+      </button>
+    </form>
+
+    <div class="auth-divider"><span>Already have an account?</span></div>
+
+    <a href="/login" class="btn btn-secondary btn-full" id="go-login">Sign in instead</a>
+
+    <div class="auth-footer" style="margin-top:var(--sp-4);">
+      <a id="go-back" href="/">← Back to store</a>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function togglePwd() {
+  const f = document.getElementById('password');
+  f.type = f.type === 'password' ? 'text' : 'password';
+}
+</script>
+{% endblock %}

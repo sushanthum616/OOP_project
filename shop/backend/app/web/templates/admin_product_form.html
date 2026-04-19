@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-sm">
+
+  <nav class="breadcrumb">
+    <a href="/admin/products">Products</a>
+    <span class="breadcrumb-sep">›</span>
+    <span>{{ title }}</span>
+  </nav>
+
+  <div class="admin-header">
+    <div>
+      <div class="admin-title">{{ title }}</div>
+    </div>
+  </div>
+
+  {% if error %}
+    <div class="flash-error" role="alert"><span>⚠️</span><span>{{ error }}</span></div>
+  {% endif %}
+
+  <div class="form-card">
+    <form id="product-form" method="post" action="{{ action }}" enctype="multipart/form-data">
+
+      <div class="form-group">
+        <label class="form-label" for="sku">SKU *</label>
+        <input id="sku" name="sku" type="text" required value="{{ product.sku }}" placeholder="e.g. PROD-001" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="name">Name *</label>
+        <input id="name" name="name" type="text" required value="{{ product.name }}" placeholder="Product name" />
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="description">Description *</label>
+        <textarea id="description" name="description" rows="4" required placeholder="Describe the product…">{{ product.description }}</textarea>
+      </div>
+
+      <div class="form-row-2">
+        <div class="form-group">
+          <label class="form-label" for="price">Price (USD) *</label>
+          <input id="price" name="price" type="text" required value="{{ price_value }}" placeholder="e.g. 19.99" />
+          <div class="form-hint">Enter as decimal, e.g. 19.99</div>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="quantity_available">Stock Quantity *</label>
+          <input id="quantity_available" name="quantity_available" type="number" min="0" required value="{{ product.quantity_available }}" placeholder="0" />
+        </div>
+      </div>
+
+      <!-- Image Upload -->
+      <div class="form-group">
+        <label class="form-label">Product Image</label>
+
+        {% if product.image_url %}
+        <div class="img-preview-wrap" id="current-img-wrap">
+          <img id="current-img" src="{{ product.image_url }}" alt="Current product image" class="img-preview" />
+          <div class="img-preview-label">Current image</div>
+          <label style="cursor:pointer; font-size:.85rem; color:var(--danger-600); font-weight:600; margin-top:var(--sp-2); display:inline-block;">
+            <input type="checkbox" name="remove_image" value="1" id="remove_image" style="display:none;" onchange="toggleRemove(this)" />
+            <span id="remove-label">🗑 Remove image</span>
+          </label>
+        </div>
+        {% endif %}
+
+        <div class="img-dropzone" id="dropzone" onclick="document.getElementById('image').click()">
+          <div class="img-dropzone-icon">🖼️</div>
+          <div class="img-dropzone-text"><strong>Click to upload</strong> or drag &amp; drop</div>
+          <div class="img-dropzone-hint">PNG, JPG, WEBP — max 5 MB</div>
+          <img id="new-img-preview" src="" alt="" class="img-preview" style="display:none; margin-top:12px;" />
+          <div id="new-img-name" class="img-dropzone-hint" style="margin-top:6px;"></div>
+        </div>
+
+        <input id="image" name="image" type="file"
+               accept="image/png,image/jpeg,image/webp,image/gif"
+               style="display:none;"
+               onchange="previewImage(this)" />
+      </div>
+
+      <div class="form-group" style="display:flex; align-items:center; gap:10px;">
+        <input id="is_active" name="is_active" type="checkbox" {% if product.is_active %}checked{% endif %} />
+        <label for="is_active" style="cursor:pointer; font-size:.9rem; font-weight:500;">
+          ✅ Active — visible to customers
+        </label>
+      </div>
+
+      <div class="form-actions">
+        <button id="save-product-btn" type="submit" class="btn btn-accent btn-lg">💾 Save Product</button>
+        <a href="/admin/products" class="btn btn-secondary">Cancel</a>
+      </div>
+
+    </form>
+  </div>
+
+</div>
+
+<script>
+  const dropzone = document.getElementById('dropzone');
+
+  dropzone.addEventListener('dragover', e => {
+    e.preventDefault();
+    dropzone.classList.add('dragover');
+  });
+  dropzone.addEventListener('dragleave', () => dropzone.classList.remove('dragover'));
+  dropzone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropzone.classList.remove('dragover');
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      document.getElementById('image').files = dt.files;
+      previewImage(document.getElementById('image'));
+    }
+  });
+
+  function previewImage(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = e => {
+      const preview = document.getElementById('new-img-preview');
+      preview.src = e.target.result;
+      preview.style.display = 'block';
+      document.getElementById('new-img-name').textContent = '📎 ' + file.name;
+      dropzone.classList.add('has-file');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function toggleRemove(cb) {
+    const wrap = document.getElementById('current-img-wrap');
+    const label = document.getElementById('remove-label');
+    if (cb.checked) {
+      wrap.style.opacity = '0.4';
+      label.textContent = '↩ Undo remove';
+    } else {
+      wrap.style.opacity = '1';
+      label.textContent = '🗑 Remove image';
+    }
+  }
+</script>
+{% endblock %}

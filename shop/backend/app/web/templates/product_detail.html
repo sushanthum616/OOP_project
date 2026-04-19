@@ -1,0 +1,260 @@
+{% extends "base.html" %}
+{% block title %}{{ product.name }}{% endblock %}
+{% block description %}{{ product.description or product.name }} — Buy at MiniShop.{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- Breadcrumb -->
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="/">Home</a>
+    <span class="breadcrumb-sep" aria-hidden="true">›</span>
+    <span>{{ product.name }}</span>
+  </nav>
+
+  {% if flash_error %}
+  <div class="flash-error" role="alert"><span>⚠️</span><span>{{ flash_error }}</span></div>
+  {% endif %}
+
+  <div class="product-detail-layout">
+
+    <!-- ── Left: Image + info ── -->
+    <div>
+      <!-- Big image -->
+      <div class="product-detail-image" aria-label="Product image">
+        {% if product.image_url %}
+          <img src="{{ product.image_url }}" alt="{{ product.name }}" class="product-detail-img-photo" />
+        {% else %}
+          <span aria-hidden="true">
+            {% if "book" in product.name|lower %}📚
+            {% elif "mouse" in product.name|lower %}🖱️
+            {% elif "phone" in product.name|lower %}📱
+            {% elif "laptop" in product.name|lower %}💻
+            {% elif "headphone" in product.name|lower or "headset" in product.name|lower %}🎧
+            {% elif "keyboard" in product.name|lower %}⌨️
+            {% elif "monitor" in product.name|lower or "screen" in product.name|lower %}🖥️
+            {% elif "camera" in product.name|lower %}📷
+            {% elif "watch" in product.name|lower %}⌚
+            {% else %}🛍️
+            {% endif %}
+          </span>
+        {% endif %}
+      </div>
+
+      <!-- Details card -->
+      <div class="info-card" style="margin-top:0;">
+        <h3 style="font-size:.85rem;text-transform:uppercase;letter-spacing:.5px;color:var(--slate-500);margin-bottom:var(--sp-3);">📦 Product Details</h3>
+        <table style="width:100%;border-collapse:collapse;">
+          <tr>
+            <td style="padding:8px 0;color:var(--slate-500);font-size:.88rem;width:40%;">SKU</td>
+            <td style="padding:8px 0;font-weight:600;font-size:.88rem;"><code>{{ product.sku }}</code></td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:var(--slate-500);font-size:.88rem;">Stock</td>
+            <td style="padding:8px 0;font-size:.88rem;">
+              {% if product.quantity_available == 0 %}
+              <span style="color:var(--danger-600);font-weight:600;">Out of stock</span>
+              {% elif product.quantity_available <= 5 %}
+              <span style="color:var(--warning-600);font-weight:600;">Only {{ product.quantity_available }} left</span>
+              {% else %}
+              <span style="color:var(--success-600);font-weight:600;">In Stock ({{ product.quantity_available }} units)</span>
+              {% endif %}
+            </td>
+          </tr>
+          <tr>
+            <td style="padding:8px 0;color:var(--slate-500);font-size:.88rem;">Status</td>
+            <td style="padding:8px 0;font-size:.88rem;">
+              {% if product.is_active %}
+              <span class="badge badge-active">Active</span>
+              {% else %}
+              <span class="badge badge-inactive">Inactive</span>
+              {% endif %}
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Reviews section -->
+      <div style="margin-top:var(--sp-6);">
+        <!-- Rating summary -->
+        <div class="review-summary-bar">
+          <div class="review-summary-left">
+            <div class="review-big-score">{{ "%.1f"|format(avg_rating) }}</div>
+            <div class="stars" aria-label="{{ avg_rating }} out of 5">
+              {% for i in range(1, 6) %}
+                {% if avg_rating >= i %}
+                  <span class="star filled" aria-hidden="true">★</span>
+                {% elif avg_rating >= i - 0.5 %}
+                  <span class="star half" aria-hidden="true">★</span>
+                {% else %}
+                  <span class="star empty" aria-hidden="true">★</span>
+                {% endif %}
+              {% endfor %}
+            </div>
+            <div class="muted" style="margin-top:4px;">{{ review_count }} review{% if review_count != 1 %}s{% endif %}</div>
+          </div>
+        </div>
+
+        <!-- Write a review form -->
+        {% if can_review and user %}
+        <div class="card" style="margin-top:var(--sp-5);">
+          <div class="card-header">✍️ {% if my_review %}Edit your review{% else %}Write a review{% endif %}</div>
+          <div class="card-body">
+            <form id="review-form" method="post" action="/product/{{ product.id }}/review">
+              <div class="form-group">
+                <label class="form-label">Rating</label>
+                <div class="star-picker" id="star-picker" role="group" aria-label="Rating">
+                  {% for v in [1,2,3,4,5] %}
+                  <input type="radio" name="rating" id="r{{ v }}" value="{{ v }}"
+                    {% if my_review and my_review.rating == v %}checked{% elif not my_review and v == 5 %}checked{% endif %}
+                    class="sr-only" required />
+                  <label for="r{{ v }}" class="star-pick" aria-label="{{ v }} star{% if v != 1 %}s{% endif %}">★</label>
+                  {% endfor %}
+                </div>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="review-title">Title</label>
+                <input id="review-title" name="title" type="text" placeholder="Summarise your experience" value="{{ my_review.title if my_review else '' }}" maxlength="120" />
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="review-body">Review</label>
+                <textarea id="review-body" name="body" rows="4" placeholder="Share the details of your experience…" maxlength="2000">{{ my_review.body if my_review else '' }}</textarea>
+              </div>
+              <button id="submit-review-btn" type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+          </div>
+        </div>
+        {% elif user and not can_review %}
+        <div class="info-card" style="background:var(--slate-50);margin-top:var(--sp-5);">
+          <p class="muted" style="font-size:.88rem;">💡 Purchase this product to leave a review.</p>
+        </div>
+        {% elif not user %}
+        <div class="info-card" style="background:var(--slate-50);margin-top:var(--sp-5);">
+          <p class="muted" style="font-size:.88rem;"><a href="/login?next=/product/{{ product.id }}">Sign in</a> to write a review.</p>
+        </div>
+        {% endif %}
+
+        <!-- Review list -->
+        {% if reviews %}
+        <div style="margin-top:var(--sp-5);">
+          <h3 style="font-size:1rem;font-weight:700;margin-bottom:var(--sp-4);">Customer Reviews</h3>
+          {% for r in reviews %}
+          <div class="review-card">
+            <div class="review-header">
+              <div style="display:flex;align-items:center;gap:var(--sp-3);">
+                <div class="reviewer-avatar" aria-hidden="true">{{ r.user_name[0]|upper if r.user_name else "?" }}</div>
+                <div class="reviewer-info">
+                  <div class="reviewer-name">{{ r.user_name or "Anonymous" }}</div>
+                  <div class="review-date">{{ r.created_at_display if r.created_at_display is defined else "" }}</div>
+                </div>
+              </div>
+              <div style="display:flex;align-items:center;gap:var(--sp-2);">
+                <div class="stars" aria-label="{{ r.rating }} out of 5">
+                  {% for i in range(1, 6) %}
+                  <span class="star {% if r.rating >= i %}filled{% else %}empty{% endif %}" aria-hidden="true">★</span>
+                  {% endfor %}
+                </div>
+                {% if r.verified_purchase %}
+                <span class="verified-badge">✓ Verified</span>
+                {% endif %}
+              </div>
+            </div>
+            {% if r.title %}
+            <div class="review-title">{{ r.title }}</div>
+            {% endif %}
+            {% if r.body %}
+            <div class="review-body">{{ r.body }}</div>
+            {% endif %}
+          </div>
+          {% endfor %}
+        </div>
+        {% else %}
+        <div class="empty-state" style="padding:var(--sp-8) 0;">
+          <div class="empty-icon" style="font-size:2.5rem;">💬</div>
+          <h3>No reviews yet</h3>
+          <p>Be the first to share your thoughts!</p>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- ── Right: Buy box ── -->
+    <div class="product-detail-buy">
+      <div class="product-sku" style="margin-bottom:var(--sp-2);">{{ product.sku }}</div>
+      <h1 class="product-detail-name">{{ product.name }}</h1>
+
+      <!-- Stars -->
+      <div style="display:flex;align-items:center;gap:var(--sp-2);margin-bottom:var(--sp-4);">
+        <div class="stars" aria-label="{{ avg_rating }} out of 5">
+          {% for i in range(1, 6) %}
+            {% if avg_rating >= i %}<span class="star filled" aria-hidden="true">★</span>
+            {% elif avg_rating >= i - 0.5 %}<span class="star half" aria-hidden="true">★</span>
+            {% else %}<span class="star empty" aria-hidden="true">★</span>
+            {% endif %}
+          {% endfor %}
+        </div>
+        <span class="muted" style="font-size:.83rem;">{{ review_count }} review{% if review_count != 1 %}s{% endif %}</span>
+      </div>
+
+      <div class="product-detail-price">{{ product.price.display }}</div>
+
+      {% if product.description %}
+      <p class="product-detail-desc">{{ product.description }}</p>
+      {% endif %}
+
+      {% if product.quantity_available > 0 and product.is_active %}
+      <form id="add-to-cart-detail" method="post" action="/cart/add/{{ product.id }}" style="margin-top:var(--sp-5);">
+        <input type="hidden" name="next" value="/product/{{ product.id }}" />
+        <div class="product-qty-row">
+          <label class="form-label" for="qty-detail" style="margin:0;">Qty</label>
+          <input id="qty-detail" name="qty" type="number" min="1" max="{{ product.quantity_available }}" value="1" style="width:80px;" />
+        </div>
+        <button id="add-to-cart-detail-btn" type="submit" class="btn btn-accent btn-full btn-lg" style="margin-top:var(--sp-4);">
+          🛒 Add to Cart
+        </button>
+      </form>
+      {% elif not product.is_active %}
+      <div class="flash-error" style="margin-top:var(--sp-5);">This product is currently unavailable.</div>
+      {% else %}
+      <button class="btn btn-secondary btn-full btn-lg" style="margin-top:var(--sp-5);" disabled>Out of Stock</button>
+      {% endif %}
+
+      <div style="margin-top:var(--sp-5);padding-top:var(--sp-4);border-top:1px solid var(--color-border);">
+        <div class="feature-mini-list">
+          <div class="feature-mini">🔒 <span>Secure checkout</span></div>
+          <div class="feature-mini">↩️ <span>30-day returns</span></div>
+          <div class="feature-mini">🚀 <span>Fast delivery</span></div>
+        </div>
+      </div>
+
+      <a href="/" class="btn btn-ghost btn-full" style="margin-top:var(--sp-3);justify-content:center;" id="back-to-store-btn">
+        ← Back to store
+      </a>
+    </div>
+
+  </div>
+</div>
+
+<style>
+.star-picker { display:flex; gap:6px; }
+.star-pick { font-size:1.8rem; cursor:pointer; color:var(--slate-300); transition:color .15s; }
+.star-picker input:checked ~ label.star-pick,
+.star-picker label.star-pick:hover,
+.star-picker label.star-pick:hover ~ label.star-pick { color: var(--slate-300); }
+.star-picker label.star-pick { color: var(--amber-500); }
+/* RTL star logic */
+.star-picker { flex-direction: row-reverse; justify-content: flex-end; }
+.star-picker label.star-pick { color: var(--slate-300); }
+.star-picker input:checked ~ label { color: var(--amber-500); }
+.star-picker label:hover, .star-picker label:hover ~ label { color: var(--amber-500); }
+.sr-only { position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0); }
+.product-detail-name { font-family:var(--font-display);font-size:1.6rem;font-weight:800;color:var(--slate-900);line-height:1.2;margin-bottom:var(--sp-2); }
+.product-detail-price { font-family:var(--font-display);font-size:2rem;font-weight:800;color:var(--slate-900);margin-bottom:var(--sp-3); }
+.product-detail-desc { font-size:.92rem;color:var(--slate-600);line-height:1.7;margin-bottom:var(--sp-4); }
+.product-qty-row { display:flex;align-items:center;gap:var(--sp-3); }
+.review-summary-bar { display:flex;align-items:center;gap:var(--sp-6);padding:var(--sp-5);background:var(--color-surface);border:1px solid var(--color-border);border-radius:var(--r-lg);margin-bottom:var(--sp-4); }
+.review-big-score { font-family:var(--font-display);font-size:3rem;font-weight:800;color:var(--slate-900);line-height:1; }
+.feature-mini-list { display:flex;flex-direction:column;gap:var(--sp-2); }
+.feature-mini { display:flex;align-items:center;gap:var(--sp-2);font-size:.85rem;color:var(--slate-600); }
+</style>
+{% endblock %}

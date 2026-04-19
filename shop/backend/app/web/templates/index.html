@@ -1,0 +1,165 @@
+{% extends "base.html" %}
+{% block title %}MiniShop — Premium Online Store{% endblock %}
+{% block description %}Discover curated products at MiniShop. Premium shopping, effortless delivery.{% endblock %}
+
+{% block content %}
+<div class="container">
+
+  <!-- ── Hero ── -->
+  <section class="hero" aria-label="Welcome banner">
+    <div class="hero-glow hero-glow-1"></div>
+    <div class="hero-glow hero-glow-2"></div>
+    <div class="hero-content">
+      <div class="hero-eyebrow">✨ New arrivals just dropped</div>
+      <h1>Shop smarter.<br/>Live better.</h1>
+      <p>Discover hand-picked products at unbeatable prices. Fast delivery, easy returns, and a premium experience at every step.</p>
+      <div class="hero-actions">
+        <a href="#products" class="btn btn-accent btn-lg" id="hero-shop-btn">Shop Now →</a>
+        {% if not user %}
+        <a href="/register" class="btn btn-hero-outline" id="hero-register-btn">Create an account</a>
+        {% endif %}
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-value">500+</span><span class="hero-stat-label">Products</span></div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat"><span class="hero-stat-value">24/7</span><span class="hero-stat-label">Support</span></div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat"><span class="hero-stat-value">Free</span><span class="hero-stat-label">Returns</span></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Flash error ── -->
+  {% if flash_error %}
+  <div class="flash-error" role="alert">
+    <span>⚠️</span><span>{{ flash_error }}</span>
+  </div>
+  {% endif %}
+
+  <!-- ── Products section ── -->
+  <section id="products" aria-label="Product catalog">
+    <div class="section-heading">
+      <h2>
+        {% if q %}
+          Search results for "<em>{{ q }}</em>"
+        {% else %}
+          Featured Products
+        {% endif %}
+      </h2>
+      <div class="section-line"></div>
+      {% if q %}
+      <a href="/" class="btn btn-ghost btn-sm" id="clear-search-btn">✕ Clear</a>
+      {% endif %}
+    </div>
+
+    {% if not products %}
+    <div class="empty-state">
+      <div class="empty-icon">🔍</div>
+      <h3>No products found</h3>
+      <p>Try a different search term or browse all products.</p>
+      <a href="/" class="btn btn-primary" style="margin-top:20px;" id="browse-all-btn">Browse All</a>
+    </div>
+    {% else %}
+    <div class="product-grid">
+      {% for p in products %}
+      <article class="product-card" onclick="window.location='/product/{{ p.id }}'" tabindex="0" role="button" aria-label="{{ p.name }}" onkeydown="if(event.key==='Enter')window.location='/product/{{ p.id }}'">
+
+        <!-- Image area -->
+        <div class="product-img">
+          {% if p.image_url %}
+            <img src="{{ p.image_url }}" alt="{{ p.name }}" class="product-img-photo" />
+          {% else %}
+            <span class="product-img-emoji" aria-hidden="true">
+              {% if "book" in p.name|lower %}📚
+              {% elif "mouse" in p.name|lower %}🖱️
+              {% elif "phone" in p.name|lower %}📱
+              {% elif "laptop" in p.name|lower %}💻
+              {% elif "headphone" in p.name|lower or "headset" in p.name|lower %}🎧
+              {% elif "keyboard" in p.name|lower %}⌨️
+              {% elif "monitor" in p.name|lower or "screen" in p.name|lower %}🖥️
+              {% elif "camera" in p.name|lower %}📷
+              {% elif "watch" in p.name|lower %}⌚
+              {% elif "shirt" in p.name|lower or "clothing" in p.name|lower %}👕
+              {% else %}🛍️
+              {% endif %}
+            </span>
+          {% endif %}
+          {% if p.quantity_available == 0 %}
+          <span class="stock-badge out-of-stock">Out of stock</span>
+          {% elif p.quantity_available <= 5 %}
+          <span class="stock-badge low-stock">Only {{ p.quantity_available }} left</span>
+          {% else %}
+          <span class="stock-badge in-stock">In Stock</span>
+          {% endif %}
+        </div>
+
+        <!-- Body -->
+        <div class="product-card-body">
+          <div class="product-sku">{{ p.sku }}</div>
+          <div class="product-name">
+            <a href="/product/{{ p.id }}" id="product-link-{{ loop.index }}">{{ p.name }}</a>
+          </div>
+          {% if p.description %}
+          <p class="product-desc">{{ p.description }}</p>
+          {% endif %}
+          <div class="product-price">{{ p.price.display }}</div>
+        </div>
+
+        <!-- Footer / Add to cart -->
+        <div class="product-card-foot">
+          {% if p.quantity_available > 0 %}
+          <form id="add-to-cart-{{ loop.index }}" method="post" action="/cart/add/{{ p.id }}" onclick="event.stopPropagation();">
+            <input type="hidden" name="qty" value="1" />
+            <input type="hidden" name="next" value="/" />
+            <button id="add-btn-{{ loop.index }}" type="submit" class="btn btn-primary btn-full">Add to Cart</button>
+          </form>
+          {% else %}
+          <button class="btn btn-secondary btn-full" disabled aria-disabled="true">Out of Stock</button>
+          {% endif %}
+        </div>
+
+      </article>
+      {% endfor %}
+    </div>
+    {% endif %}
+  </section>
+
+  <!-- ── Feature strip ── -->
+  {% if not q %}
+  <section class="feature-strip" aria-label="Why shop with us">
+    <div class="feature-item">
+      <div class="feature-icon">🚀</div>
+      <div class="feature-text">
+        <strong>Fast Delivery</strong>
+        <span>Orders processed same day</span>
+      </div>
+    </div>
+    <div class="feature-divider"></div>
+    <div class="feature-item">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-text">
+        <strong>Secure Checkout</strong>
+        <span>256-bit SSL encryption</span>
+      </div>
+    </div>
+    <div class="feature-divider"></div>
+    <div class="feature-item">
+      <div class="feature-icon">↩️</div>
+      <div class="feature-text">
+        <strong>Easy Returns</strong>
+        <span>30-day free returns</span>
+      </div>
+    </div>
+    <div class="feature-divider"></div>
+    <div class="feature-item">
+      <div class="feature-icon">💬</div>
+      <div class="feature-text">
+        <strong>24/7 Support</strong>
+        <span>We're always here to help</span>
+      </div>
+    </div>
+  </section>
+  {% endif %}
+
+</div>
+{% endblock %}
